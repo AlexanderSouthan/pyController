@@ -108,7 +108,7 @@ class pid_control:
 
             self.d_terms.append(error_diff/time_diff)
             if len(self.d_terms) < d_window:
-                d_window = d_window - (d_window - len(self.d_terms)%d_window)
+                d_window = len(self.d_terms)
             self.d_smoothed.append(sum(self.d_terms[-d_window:])/d_window)
 
         curr_response = (self.p_gain * self.p_terms[-1] +
