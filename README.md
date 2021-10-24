@@ -4,8 +4,9 @@
 
 # pyController
 ## Installation
+Downloading and running the following code in the repository folder should work:
 ```
-pip install pyController
+pip install -e .
 ```
 ## Provides currently:
 * two classes useful for controlling some parameter in a
