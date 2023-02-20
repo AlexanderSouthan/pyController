@@ -1,3 +1,5 @@
 name: pyController
 dependencies:
+  - pandas
+  - numpy
   - scipy
