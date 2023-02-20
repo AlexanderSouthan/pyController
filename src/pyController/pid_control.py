@@ -4,6 +4,7 @@ Created on Thu Oct  7 10:08:57 2021
 
 @author: Alexander Southan
 """
+import pandas as pd
 
 class pid_control:
     def __init__(self, set_point, p_gain, i_gain, d_gain,
@@ -42,12 +43,11 @@ class pid_control:
         None.
 
         """
-        self.set_point = set_point
-        self.p_gain = p_gain
-        self.i_gain = i_gain
-        self.d_gain = d_gain
-        self.set_point_type = set_point_type
-        self.response_limits = response_limits
+        self.params = pd.Series(
+            [p_gain, i_gain, d_gain, set_point, set_point_type,
+             response_limits],
+            index=['P', 'I', 'D', 'set_point', 'set_point_type',
+                   'response_limits'])
 
         self.signal = []
         self.time = []
@@ -88,10 +88,10 @@ class pid_control:
         self.signal.append(new_signal)
         self.time.append(new_time)
 
-        if self.set_point_type == 'lower_limit':
-            self.error.append(self.set_point - self.signal[-1])
-        elif self.set_point_type == 'upper_limit':
-            self.error.append(self.signal[-1] - self.set_point)
+        if self.params['set_point_type'] == 'lower_limit':
+            self.error.append(self.params['set_point'] - self.signal[-1])
+        elif self.params['set_point_type'] == 'upper_limit':
+            self.error.append(self.signal[-1] - self.params['set_point'])
 
         self.p_terms.append(self.error[-1])
 
@@ -111,22 +111,22 @@ class pid_control:
                 d_window = len(self.d_terms)
             self.d_smoothed.append(sum(self.d_terms[-d_window:])/d_window)
 
-        curr_response = (self.p_gain * self.p_terms[-1] +
-                         self.i_gain * self.i_terms[-1] +
-                         self.d_gain * self.d_smoothed[-1])
+        curr_response = (self.params['P'] * self.p_terms[-1] +
+                         self.params['I'] * self.i_terms[-1] +
+                         self.params['D'] * self.d_smoothed[-1])
 
 
-        if self.response_limits is None:
+        if self.params['response_limits'] is None:
             self.response.append(curr_response)
         else:
-            # If response violates limits from self.response_limits, it is
+            # If response violates limits from self.params['response_limits'], it is
             # corrected to one of the limit values.
-            if (self.response_limits[0] is not None) and (
-                    curr_response < self.response_limits[0]):
-                self.response.append(self.response_limits[0])
-            elif (self.response_limits[1] is not None) and (
-                    curr_response > self.response_limits[1]):
-                self.response.append(self.response_limits[1])
+            if (self.params['response_limits'][0] is not None) and (
+                    curr_response < self.params['response_limits'][0]):
+                self.response.append(self.params['response_limits'][0])
+            elif (self.params['response_limits'][1] is not None) and (
+                    curr_response > self.params['response_limits'][1]):
+                self.response.append(self.params['response_limits'][1])
             else:
                 self.response.append(curr_response)
 
