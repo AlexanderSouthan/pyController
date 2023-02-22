@@ -8,7 +8,8 @@ import pandas as pd
 
 class pid_control:
     def __init__(self, set_point, p_gain, i_gain, d_gain,
-                 set_point_type='lower_limit', response_limits=None):
+                 set_point_type='lower_limit', response_limits=None,
+                 tolerance=0):
         """
         Initialize a PID controller instance.
 
@@ -45,9 +46,9 @@ class pid_control:
         """
         self.params = pd.Series(
             [p_gain, i_gain, d_gain, set_point, set_point_type,
-             response_limits],
+             response_limits, tolerance],
             index=['P', 'I', 'D', 'set_point', 'set_point_type',
-                   'response_limits'])
+                   'response_limits', 'tolerance'])
 
         self.signal = []
         self.time = []
@@ -115,7 +116,6 @@ class pid_control:
                          self.params['I'] * self.i_terms[-1] +
                          self.params['D'] * self.d_smoothed[-1])
 
-
         if self.params['response_limits'] is None:
             self.response.append(curr_response)
         else:
@@ -127,6 +127,8 @@ class pid_control:
             elif (self.params['response_limits'][1] is not None) and (
                     curr_response > self.params['response_limits'][1]):
                 self.response.append(self.params['response_limits'][1])
+            elif abs(self.error[-1]) < self.params['tolerance']:
+                self.response.append(0)
             else:
                 self.response.append(curr_response)
 
